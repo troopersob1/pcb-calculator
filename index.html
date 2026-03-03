@@ -26,7 +26,7 @@
             color: var(--text);
             line-height: 1.6;
         }
-        .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
         header {
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
             color: white;
@@ -105,6 +105,7 @@
             outline: none;
             border-color: var(--primary-light);
         }
+        .field .hint { font-size: 0.72rem; color: var(--text-light); margin-top: 4px; font-style: italic; }
         .upload-box {
             border: 2px dashed var(--border);
             border-radius: 12px;
@@ -155,15 +156,15 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.88rem;
+            font-size: 0.85rem;
         }
         thead th {
             background: var(--primary);
             color: white;
-            padding: 12px 14px;
+            padding: 10px 12px;
             text-align: left;
             font-weight: 600;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             white-space: nowrap;
@@ -171,7 +172,7 @@
         thead th:first-child { border-radius: 8px 0 0 0; }
         thead th:last-child { border-radius: 0 8px 0 0; }
         tbody td {
-            padding: 11px 14px;
+            padding: 10px 12px;
             border-bottom: 1px solid var(--border);
         }
         tbody tr:hover { background: #f8f9fb; }
@@ -181,12 +182,13 @@
         .text-center { text-align: center; }
         .badge {
             display: inline-block;
-            padding: 3px 10px;
+            padding: 2px 8px;
             border-radius: 20px;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 600;
         }
         .badge-blue { background: #eef5fb; color: var(--primary-light); }
+        .badge-red { background: #fde8e8; color: var(--accent); }
         .summary-row {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -211,10 +213,9 @@
             font-weight: 700;
             color: var(--primary);
         }
-        /* Single Calculator */
         .calc-form {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr 1fr 1fr;
             gap: 16px;
         }
         .calc-form .field.full { grid-column: 1 / -1; }
@@ -228,14 +229,13 @@
         .result-box h3 { color: white; margin-bottom: 16px; }
         .result-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
             gap: 12px;
         }
         .result-item { text-align: center; }
-        .result-item .label { font-size: 0.75rem; opacity: 0.8; }
-        .result-item .value { font-size: 1.2rem; font-weight: 700; }
+        .result-item .label { font-size: 0.72rem; opacity: 0.8; }
+        .result-item .value { font-size: 1.15rem; font-weight: 700; }
         .result-item.highlight { background: rgba(255,255,255,0.15); padding: 12px; border-radius: 8px; }
-        /* Tax Info */
         .info-table { margin-bottom: 20px; }
         .info-table th { background: var(--bg); color: var(--text); }
         .info-table td, .info-table th { padding: 10px 14px; border: 1px solid var(--border); }
@@ -254,6 +254,7 @@
             font-size: 0.82rem;
         }
         .footer a { color: var(--primary-light); text-decoration: none; }
+        .separator { border-top: 2px solid var(--border); margin: 16px 0; }
         @media (max-width: 768px) {
             .calc-form { grid-template-columns: 1fr; }
             .config-grid { grid-template-columns: 1fr 1fr; }
@@ -285,12 +286,20 @@
             </p>
             <div class="config-grid">
                 <div class="field">
+                    <label>Tax Resident Category</label>
+                    <select id="bulkResident">
+                        <option value="citizen" selected>Malaysian Citizen</option>
+                        <option value="non_citizen">Non-Malaysian Citizen</option>
+                    </select>
+                </div>
+                <div class="field">
                     <label>EPF Rate (%)</label>
                     <select id="bulkEpfRate">
                         <option value="11" selected>11% (Standard)</option>
                         <option value="9">9%</option>
                         <option value="7">7%</option>
                         <option value="5.5">5.5%</option>
+                        <option value="2">2% (Non-Citizen)</option>
                         <option value="0">0% (Exempted)</option>
                     </select>
                 </div>
@@ -346,12 +355,16 @@
                             <tr>
                                 <th>#</th>
                                 <th>Employee Name</th>
-                                <th>Gross Salary (RM)</th>
-                                <th>EPF (RM)</th>
-                                <th>SOCSO (RM)</th>
-                                <th>EIS (RM)</th>
-                                <th>PCB / MTD (RM)</th>
-                                <th>Net Salary (RM)</th>
+                                <th>Category</th>
+                                <th>Basic Salary</th>
+                                <th>OT</th>
+                                <th>Commission</th>
+                                <th>Allowance</th>
+                                <th>EPF</th>
+                                <th>SOCSO</th>
+                                <th>EIS</th>
+                                <th>PCB / MTD</th>
+                                <th>Net Salary</th>
                             </tr>
                         </thead>
                         <tbody id="bulkTableBody"></tbody>
@@ -367,12 +380,11 @@
             <h3>Employee Details</h3>
             <div class="calc-form">
                 <div class="field">
-                    <label>Monthly Gross Salary (RM)</label>
-                    <input type="number" id="singleSalary" placeholder="e.g. 5000" min="0" step="100" oninput="calculateSingle()">
-                </div>
-                <div class="field">
-                    <label>Monthly Fixed Allowance (RM)</label>
-                    <input type="number" id="singleAllowance" placeholder="0" value="0" min="0" oninput="calculateSingle()">
+                    <label>Tax Resident Category</label>
+                    <select id="singleResident" onchange="onResidentChange(); calculateSingle()">
+                        <option value="citizen">Malaysian Citizen</option>
+                        <option value="non_citizen">Non-Malaysian Citizen</option>
+                    </select>
                 </div>
                 <div class="field">
                     <label>EPF Rate (%)</label>
@@ -381,6 +393,7 @@
                         <option value="9">9%</option>
                         <option value="7">7%</option>
                         <option value="5.5">5.5%</option>
+                        <option value="2">2% (Non-Citizen)</option>
                         <option value="0">0% (Exempted)</option>
                     </select>
                 </div>
@@ -391,6 +404,26 @@
                         <option value="married_working">Married (Spouse Working)</option>
                         <option value="married_not_working">Married (Spouse Not Working)</option>
                     </select>
+                </div>
+                <div class="field">
+                    <label>Monthly Basic Salary (RM)</label>
+                    <input type="number" id="singleSalary" placeholder="e.g. 5000" min="0" step="100" oninput="calculateSingle()">
+                    <div class="hint">Subject to EPF &amp; tax</div>
+                </div>
+                <div class="field">
+                    <label>Monthly Overtime / OT (RM)</label>
+                    <input type="number" id="singleOT" placeholder="0" value="0" min="0" oninput="calculateSingle()">
+                    <div class="hint">Subject to tax, not EPF</div>
+                </div>
+                <div class="field">
+                    <label>Monthly Commission (RM)</label>
+                    <input type="number" id="singleCommission" placeholder="0" value="0" min="0" oninput="calculateSingle()">
+                    <div class="hint">Subject to tax, not EPF</div>
+                </div>
+                <div class="field">
+                    <label>Monthly Allowance (RM)</label>
+                    <input type="number" id="singleAllowance" placeholder="0" value="0" min="0" oninput="calculateSingle()">
+                    <div class="hint">Not subject to tax or EPF (display only)</div>
                 </div>
                 <div class="field">
                     <label>No. of Children (Under 18)</label>
@@ -422,7 +455,8 @@
         <div class="card">
             <h3>Malaysia Individual Tax Rates (YA 2025)</h3>
             <div class="note">
-                These are the progressive tax rates for <strong>resident individuals</strong> as published by LHDN (Inland Revenue Board of Malaysia).
+                These are the progressive tax rates for <strong>resident individuals (Malaysian Citizens)</strong> as published by LHDN.
+                <br><strong>Non-Malaysian Citizens (non-resident):</strong> Flat rate of <strong>30%</strong> on all income. No reliefs or rebates applicable.
             </div>
             <div class="results-wrap">
                 <table class="info-table">
@@ -450,7 +484,7 @@
             </div>
         </div>
         <div class="card">
-            <h3>Tax Reliefs Used in PCB Calculation</h3>
+            <h3>Tax Reliefs Used in PCB Calculation (Malaysian Citizens Only)</h3>
             <div class="results-wrap">
                 <table class="info-table">
                     <thead>
@@ -461,13 +495,12 @@
                         <tr><td>EPF Contribution</td><td>Up to 4,000</td><td>Capped at actual EPF or RM4,000</td></tr>
                         <tr><td>Spouse (non-working)</td><td>4,000</td><td>If married and spouse has no income</td></tr>
                         <tr><td>Each Child (under 18)</td><td>2,000</td><td>Per qualifying child</td></tr>
-                        <tr><td>SOCSO Contribution</td><td>Up to 350</td><td>Actual SOCSO contribution</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
         <div class="card">
-            <h3>Tax Rebates</h3>
+            <h3>Tax Rebates (Malaysian Citizens Only)</h3>
             <div class="results-wrap">
                 <table class="info-table">
                     <thead>
@@ -490,12 +523,29 @@
             <div class="results-wrap">
                 <table class="info-table">
                     <thead>
-                        <tr><th>Contribution</th><th>Rate</th><th>Ceiling</th></tr>
+                        <tr><th>Contribution</th><th>Malaysian Citizen</th><th>Non-Malaysian Citizen</th><th>Ceiling</th></tr>
                     </thead>
                     <tbody>
-                        <tr><td>EPF (KWSP)</td><td>11% (standard, below 60)</td><td>No ceiling</td></tr>
-                        <tr><td>SOCSO (PERKESO)</td><td>~0.5% (lookup table)</td><td>Wages up to RM6,000/month</td></tr>
-                        <tr><td>EIS (SIP)</td><td>~0.2% (lookup table)</td><td>Wages up to RM6,000/month</td></tr>
+                        <tr><td>EPF (KWSP)</td><td>11% (standard, below 60)</td><td>2% (from Oct 2025)</td><td>No ceiling</td></tr>
+                        <tr><td>SOCSO (PERKESO)</td><td>~0.5% (lookup table)</td><td>~0.5% (lookup table)</td><td>Wages up to RM6,000/month</td></tr>
+                        <tr><td>EIS (SIP)</td><td>~0.2% (lookup table)</td><td>~0.2% (lookup table)</td><td>Wages up to RM6,000/month</td></tr>
+                        <tr><td>PCB Tax Rate</td><td>0% &ndash; 30% (progressive)</td><td>Flat 30%</td><td>&mdash;</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card">
+            <h3>Income Treatment for PCB</h3>
+            <div class="results-wrap">
+                <table class="info-table">
+                    <thead>
+                        <tr><th>Income Type</th><th>Subject to EPF?</th><th>Subject to PCB Tax?</th><th>Notes</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Basic Salary</td><td>Yes</td><td>Yes</td><td>Primary employment income</td></tr>
+                        <tr><td>Overtime (OT)</td><td>No</td><td>Yes</td><td>Taxable but not EPF-subject</td></tr>
+                        <tr><td>Commission</td><td>No</td><td>Yes</td><td>Taxable but not EPF-subject</td></tr>
+                        <tr><td>Fixed Allowance</td><td>No</td><td>No</td><td>For salary overview only</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -553,31 +603,29 @@ function getEPFEmployee(salary, epfRate) {
     return Math.round(roundedSalary * epfRate / 100);
 }
 
-function getSOCSOEmployee(salary) {
-    if (salary <= 0) return 0;
-    // First few irregular brackets
+function getSOCSOEmployee(wages) {
+    if (wages <= 0) return 0;
     const irregular = [
         [30, 0.10], [50, 0.20], [70, 0.30], [100, 0.40],
         [140, 0.60], [200, 0.80]
     ];
     for (const [max, rate] of irregular) {
-        if (salary <= max) return rate;
+        if (wages <= max) return rate;
     }
-    // From RM200+ : RM1.25 at RM201-300, +RM0.50 per RM100 bracket, max RM29.75 at RM6000
-    const bracketIndex = Math.min(Math.ceil((salary - 200) / 100), 58);
+    const bracketIndex = Math.min(Math.ceil((wages - 200) / 100), 58);
     return Math.min(0.75 + bracketIndex * 0.50, 29.75);
 }
 
-function getEISEmployee(salary) {
-    if (salary <= 0) return 0;
+function getEISEmployee(wages) {
+    if (wages <= 0) return 0;
     const irregular = [
         [30, 0.05], [50, 0.10], [70, 0.15], [100, 0.20],
         [140, 0.25], [200, 0.35]
     ];
     for (const [max, rate] of irregular) {
-        if (salary <= max) return rate;
+        if (wages <= max) return rate;
     }
-    const bracketIndex = Math.min(Math.ceil((salary - 200) / 100), 58);
+    const bracketIndex = Math.min(Math.ceil((wages - 200) / 100), 58);
     return Math.min(0.30 + bracketIndex * 0.20, 11.90);
 }
 
@@ -585,81 +633,105 @@ function roundToNearest5Cents(amount) {
     return Math.ceil(amount * 20) / 20;
 }
 
-function calculatePCB(grossSalary, options = {}) {
+function calculatePCB(basicSalary, options = {}) {
     const {
         epfRate = 11,
         maritalStatus = 'single',
         numChildren = 0,
         includeSocso = true,
+        residentCategory = 'citizen',
+        ot = 0,
+        commission = 0,
         allowance = 0,
     } = options;
 
-    const totalMonthlyIncome = grossSalary + allowance;
+    const isNonCitizen = (residentCategory === 'non_citizen');
+
+    // Taxable income = Basic Salary + OT + Commission (allowance excluded)
+    const monthlyTaxableIncome = basicSalary + ot + commission;
+    // Total income including allowance (for display / net salary)
+    const totalMonthlyIncome = monthlyTaxableIncome + allowance;
 
     // 1. Statutory deductions (employee portion)
-    const monthlyEPF = getEPFEmployee(grossSalary, epfRate); // EPF on salary only, not allowance
-    const monthlySOCSO = includeSocso ? getSOCSOEmployee(totalMonthlyIncome) : 0;
-    const monthlyEIS = includeSocso ? getEISEmployee(totalMonthlyIncome) : 0;
+    // EPF only on basic salary
+    const monthlyEPF = getEPFEmployee(basicSalary, epfRate);
+    // SOCSO/EIS on taxable wages (basic + OT + commission)
+    const monthlySOCSO = includeSocso ? getSOCSOEmployee(monthlyTaxableIncome) : 0;
+    const monthlyEIS = includeSocso ? getEISEmployee(monthlyTaxableIncome) : 0;
 
-    // 2. Annual figures
-    const annualGross = totalMonthlyIncome * 12;
+    // 2. Annual taxable income
+    const annualTaxableIncome = monthlyTaxableIncome * 12;
     const annualEPF = monthlyEPF * 12;
-    const annualSOCSO = monthlySOCSO * 12;
 
-    // 3. Tax reliefs
-    const individualRelief = 9000;
-    const epfRelief = Math.min(annualEPF, 4000);
-    const socsoRelief = Math.min(annualSOCSO, 350);
-    const spouseRelief = (maritalStatus === 'married_not_working') ? 4000 : 0;
-    const childrenRelief = numChildren * 2000;
-    const totalReliefs = individualRelief + epfRelief + socsoRelief + spouseRelief + childrenRelief;
+    let monthlyPCB, annualTax, chargeableIncome, totalReliefs, rebate;
+    let individualRelief = 0, epfRelief = 0, spouseRelief = 0, childrenRelief = 0;
 
-    // 4. Chargeable income
-    const chargeableIncome = Math.max(0, annualGross - totalReliefs);
+    if (isNonCitizen) {
+        // NON-CITIZEN: Flat 30% on total monthly remuneration, no reliefs
+        chargeableIncome = annualTaxableIncome;
+        totalReliefs = 0;
+        rebate = 0;
+        annualTax = monthlyTaxableIncome * 0.30 * 12;
+        monthlyPCB = roundToNearest5Cents(monthlyTaxableIncome * 0.30);
+    } else {
+        // MALAYSIAN CITIZEN: Progressive tax with reliefs
+        // 3. Tax reliefs
+        individualRelief = 9000;
+        epfRelief = Math.min(annualEPF, 4000);
+        spouseRelief = (maritalStatus === 'married_not_working') ? 4000 : 0;
+        childrenRelief = numChildren * 2000;
+        totalReliefs = individualRelief + epfRelief + spouseRelief + childrenRelief;
 
-    // 5. Annual tax
-    let annualTax = calculateAnnualTax(chargeableIncome);
+        // 4. Chargeable income
+        chargeableIncome = Math.max(0, annualTaxableIncome - totalReliefs);
 
-    // 6. Tax rebate (if chargeable income <= RM35,000)
-    let rebate = 0;
-    if (chargeableIncome <= 35000) {
-        rebate = 400; // Individual rebate
-        if (maritalStatus === 'married_not_working') {
-            rebate += 400; // Spouse rebate
+        // 5. Annual tax
+        annualTax = calculateAnnualTax(chargeableIncome);
+
+        // 6. Tax rebate (if chargeable income <= RM35,000)
+        rebate = 0;
+        if (chargeableIncome <= 35000) {
+            rebate = 400;
+            if (maritalStatus === 'married_not_working') {
+                rebate += 400;
+            }
         }
+        annualTax = Math.max(0, annualTax - rebate);
+
+        // 7. Monthly PCB
+        monthlyPCB = annualTax / 12;
+        monthlyPCB = roundToNearest5Cents(monthlyPCB);
+
+        // Minimum threshold: PCB below RM10 is treated as RM0
+        if (monthlyPCB < 10) monthlyPCB = 0;
     }
-    annualTax = Math.max(0, annualTax - rebate);
 
-    // 7. Monthly PCB
-    let monthlyPCB = annualTax / 12;
-    monthlyPCB = roundToNearest5Cents(monthlyPCB);
-
-    // Minimum threshold: PCB below RM10 is treated as RM0
-    if (monthlyPCB < 10) monthlyPCB = 0;
-
-    // 8. Net salary
+    // 8. Net salary (total income minus all deductions)
     const netSalary = totalMonthlyIncome - monthlyEPF - monthlySOCSO - monthlyEIS - monthlyPCB;
 
     return {
-        grossSalary,
+        basicSalary,
+        ot,
+        commission,
         allowance,
+        monthlyTaxableIncome,
         totalMonthlyIncome,
         monthlyEPF,
         monthlySOCSO,
         monthlyEIS,
         monthlyPCB,
         netSalary,
-        annualGross,
+        annualTaxableIncome,
         annualEPF,
         totalReliefs,
         individualRelief,
         epfRelief,
-        socsoRelief,
         spouseRelief,
         childrenRelief,
         chargeableIncome,
         annualTax,
         rebate,
+        isNonCitizen,
     };
 }
 
@@ -677,13 +749,27 @@ function switchTab(tabName) {
 
 
 // ===========================
+// SINGLE: Auto-switch EPF for resident category
+// ===========================
+
+function onResidentChange() {
+    const cat = document.getElementById('singleResident').value;
+    const epfSelect = document.getElementById('singleEpfRate');
+    if (cat === 'non_citizen') {
+        epfSelect.value = '2';
+    } else {
+        epfSelect.value = '11';
+    }
+}
+
+
+// ===========================
 // BULK CALCULATOR
 // ===========================
 
 let bulkData = [];
 let bulkResults = [];
 
-// File upload handling
 const dropZone = document.getElementById('dropZone');
 const fileInput = document.getElementById('fileInput');
 
@@ -715,14 +801,17 @@ function processFile(file) {
             }
 
             bulkData = json.map(row => {
-                // Flexible column name matching
                 const name = row['Employee Name'] || row['Name'] || row['employee_name'] || row['name'] || 'Unknown';
-                const salary = parseFloat(row['Gross Monthly Salary'] || row['Gross Salary'] || row['Salary'] || row['salary'] || row['gross_salary'] || 0);
+                const salary = parseFloat(row['Basic Monthly Salary'] || row['Basic Salary'] || row['Salary'] || row['salary'] || row['basic_salary'] || 0);
+                const ot = parseFloat(row['Overtime (OT)'] || row['OT'] || row['Overtime'] || row['ot'] || 0) || 0;
+                const commission = parseFloat(row['Commission'] || row['commission'] || 0) || 0;
+                const allowance = parseFloat(row['Allowance'] || row['allowance'] || 0) || 0;
                 const marital = (row['Marital Status'] || row['marital_status'] || '').toString().toLowerCase();
                 const children = parseInt(row['Number of Children'] || row['Children'] || row['children'] || '', 10);
                 const epf = parseFloat(row['EPF Rate (%)'] || row['EPF Rate'] || row['epf_rate'] || '');
+                const resident = (row['Category'] || row['Resident Category'] || row['category'] || '').toString().toLowerCase();
 
-                return { name, salary, marital, children, epf };
+                return { name, salary, ot, commission, allowance, marital, children, epf, resident };
             });
 
             processBulkData();
@@ -739,6 +828,7 @@ function getDefaultOptions() {
         maritalStatus: document.getElementById('bulkMarital').value,
         numChildren: parseInt(document.getElementById('bulkChildren').value) || 0,
         includeSocso: document.getElementById('bulkSocso').value === 'yes',
+        residentCategory: document.getElementById('bulkResident').value,
     };
 }
 
@@ -752,16 +842,29 @@ function parseMaritalStatus(input) {
     return null;
 }
 
+function parseResidentCategory(input) {
+    if (!input) return null;
+    const s = input.toLowerCase().trim();
+    if (s.includes('non') || s.includes('foreign') || s.includes('non_citizen') || s.includes('non-citizen')) return 'non_citizen';
+    if (s.includes('citizen') || s.includes('malaysian') || s.includes('local')) return 'citizen';
+    return null;
+}
+
 function processBulkData() {
     const defaults = getDefaultOptions();
     bulkResults = [];
 
     for (const emp of bulkData) {
+        const resCat = parseResidentCategory(emp.resident) || defaults.residentCategory;
         const opts = {
-            epfRate: isNaN(emp.epf) ? defaults.epfRate : emp.epf,
+            epfRate: isNaN(emp.epf) ? (resCat === 'non_citizen' && defaults.epfRate === 11 ? 2 : defaults.epfRate) : emp.epf,
             maritalStatus: parseMaritalStatus(emp.marital) || defaults.maritalStatus,
             numChildren: isNaN(emp.children) ? defaults.numChildren : emp.children,
             includeSocso: defaults.includeSocso,
+            residentCategory: resCat,
+            ot: emp.ot || 0,
+            commission: emp.commission || 0,
+            allowance: emp.allowance || 0,
         };
 
         const result = calculatePCB(emp.salary, opts);
@@ -778,7 +881,6 @@ function fmt(n) {
 function renderBulkResults() {
     document.getElementById('bulkResults').style.display = 'block';
 
-    // Summary
     const totalEmployees = bulkResults.length;
     const totalGross = bulkResults.reduce((s, r) => s + r.totalMonthlyIncome, 0);
     const totalPCB = bulkResults.reduce((s, r) => s + r.monthlyPCB, 0);
@@ -793,13 +895,18 @@ function renderBulkResults() {
         <div class="summary-card"><div class="label">Total Net Pay</div><div class="value">RM ${fmt(totalNet)}</div></div>
     `;
 
-    // Table
     const tbody = document.getElementById('bulkTableBody');
     tbody.innerHTML = bulkResults.map((r, i) => `
         <tr>
             <td class="text-center">${i + 1}</td>
             <td>${r.name}</td>
-            <td class="text-right">${fmt(r.totalMonthlyIncome)}</td>
+            <td class="text-center">${r.isNonCitizen
+                ? '<span class="badge badge-red">Non-Citizen</span>'
+                : '<span class="badge badge-blue">Citizen</span>'}</td>
+            <td class="text-right">${fmt(r.basicSalary)}</td>
+            <td class="text-right">${r.ot ? fmt(r.ot) : '-'}</td>
+            <td class="text-right">${r.commission ? fmt(r.commission) : '-'}</td>
+            <td class="text-right">${r.allowance ? fmt(r.allowance) : '-'}</td>
             <td class="text-right">${fmt(r.monthlyEPF)}</td>
             <td class="text-right">${fmt(r.monthlySOCSO)}</td>
             <td class="text-right">${fmt(r.monthlyEIS)}</td>
@@ -808,7 +915,6 @@ function renderBulkResults() {
         </tr>
     `).join('');
 
-    // Scroll to results
     document.getElementById('bulkResults').scrollIntoView({ behavior: 'smooth' });
 }
 
@@ -821,32 +927,54 @@ function downloadTemplate() {
     const data = [
         {
             'Employee Name': 'Ahmad bin Ali',
-            'Gross Monthly Salary': 5000,
+            'Basic Monthly Salary': 5000,
+            'Overtime (OT)': 0,
+            'Commission': 0,
+            'Allowance': 500,
             'Marital Status': 'Single',
             'Number of Children': 0,
-            'EPF Rate (%)': 11
+            'EPF Rate (%)': 11,
+            'Category': 'Malaysian Citizen'
         },
         {
             'Employee Name': 'Siti binti Hassan',
-            'Gross Monthly Salary': 8000,
+            'Basic Monthly Salary': 8000,
+            'Overtime (OT)': 1200,
+            'Commission': 500,
+            'Allowance': 800,
             'Marital Status': 'Married (Spouse Not Working)',
             'Number of Children': 2,
-            'EPF Rate (%)': 11
+            'EPF Rate (%)': 11,
+            'Category': 'Malaysian Citizen'
         },
         {
             'Employee Name': 'Raj Kumar',
-            'Gross Monthly Salary': 12000,
+            'Basic Monthly Salary': 12000,
+            'Overtime (OT)': 0,
+            'Commission': 3000,
+            'Allowance': 1000,
             'Marital Status': 'Married (Spouse Working)',
             'Number of Children': 1,
-            'EPF Rate (%)': 11
+            'EPF Rate (%)': 11,
+            'Category': 'Malaysian Citizen'
+        },
+        {
+            'Employee Name': 'John Smith',
+            'Basic Monthly Salary': 10000,
+            'Overtime (OT)': 0,
+            'Commission': 0,
+            'Allowance': 600,
+            'Marital Status': 'Single',
+            'Number of Children': 0,
+            'EPF Rate (%)': 2,
+            'Category': 'Non-Malaysian Citizen'
         },
     ];
 
     const ws = XLSX.utils.json_to_sheet(data);
-
-    // Set column widths
     ws['!cols'] = [
-        { wch: 25 }, { wch: 22 }, { wch: 30 }, { wch: 20 }, { wch: 14 }
+        { wch: 25 }, { wch: 22 }, { wch: 15 }, { wch: 14 }, { wch: 14 },
+        { wch: 30 }, { wch: 20 }, { wch: 14 }, { wch: 22 }
     ];
 
     const wb = XLSX.utils.book_new();
@@ -861,12 +989,12 @@ function downloadTemplate() {
 
 function loadSampleData() {
     bulkData = [
-        { name: 'Ahmad bin Ali', salary: 3500, marital: 'single', children: NaN, epf: NaN },
-        { name: 'Siti binti Hassan', salary: 5000, marital: 'single', children: NaN, epf: NaN },
-        { name: 'Raj Kumar', salary: 7500, marital: 'married_not_working', children: 2, epf: NaN },
-        { name: 'Lim Wei Ting', salary: 10000, marital: 'married_working', children: 1, epf: NaN },
-        { name: 'Nurul Aisyah', salary: 15000, marital: 'single', children: NaN, epf: NaN },
-        { name: 'David Tan', salary: 25000, marital: 'married_not_working', children: 3, epf: NaN },
+        { name: 'Ahmad bin Ali', salary: 3500, ot: 0, commission: 0, allowance: 300, marital: 'single', children: NaN, epf: NaN, resident: 'citizen' },
+        { name: 'Siti binti Hassan', salary: 5000, ot: 800, commission: 0, allowance: 500, marital: 'single', children: NaN, epf: NaN, resident: 'citizen' },
+        { name: 'Raj Kumar', salary: 7500, ot: 0, commission: 1500, allowance: 600, marital: 'married_not_working', children: 2, epf: NaN, resident: 'citizen' },
+        { name: 'Lim Wei Ting', salary: 10000, ot: 500, commission: 2000, allowance: 800, marital: 'married_working', children: 1, epf: NaN, resident: 'citizen' },
+        { name: 'Nurul Aisyah', salary: 15000, ot: 0, commission: 0, allowance: 1000, marital: 'single', children: NaN, epf: NaN, resident: 'citizen' },
+        { name: 'John Smith', salary: 10000, ot: 0, commission: 0, allowance: 500, marital: 'single', children: NaN, epf: 2, resident: 'non_citizen' },
     ];
     processBulkData();
 }
@@ -882,14 +1010,19 @@ function downloadResults() {
     const data = bulkResults.map((r, i) => ({
         '#': i + 1,
         'Employee Name': r.name,
-        'Gross Salary (RM)': r.totalMonthlyIncome,
+        'Category': r.isNonCitizen ? 'Non-Malaysian Citizen' : 'Malaysian Citizen',
+        'Basic Salary (RM)': r.basicSalary,
+        'Overtime (RM)': r.ot,
+        'Commission (RM)': r.commission,
+        'Allowance (RM)': r.allowance,
+        'Total Income (RM)': r.totalMonthlyIncome,
         'EPF Employee (RM)': r.monthlyEPF,
         'SOCSO Employee (RM)': r.monthlySOCSO,
         'EIS Employee (RM)': r.monthlyEIS,
         'Monthly PCB (RM)': r.monthlyPCB,
         'Net Salary (RM)': r.netSalary,
         '---': '',
-        'Annual Gross (RM)': r.annualGross,
+        'Annual Taxable Income (RM)': r.annualTaxableIncome,
         'Chargeable Income (RM)': r.chargeableIncome,
         'Annual Tax (RM)': r.annualTax,
         'Total Reliefs (RM)': r.totalReliefs,
@@ -898,10 +1031,10 @@ function downloadResults() {
 
     const ws = XLSX.utils.json_to_sheet(data);
     ws['!cols'] = [
-        { wch: 5 }, { wch: 25 }, { wch: 18 }, { wch: 18 },
-        { wch: 20 }, { wch: 18 }, { wch: 18 }, { wch: 18 },
-        { wch: 3 }, { wch: 18 }, { wch: 22 }, { wch: 18 },
-        { wch: 18 }, { wch: 14 },
+        { wch: 5 }, { wch: 25 }, { wch: 22 }, { wch: 16 }, { wch: 14 },
+        { wch: 16 }, { wch: 14 }, { wch: 16 }, { wch: 16 }, { wch: 18 },
+        { wch: 16 }, { wch: 16 }, { wch: 16 },
+        { wch: 3 }, { wch: 22 }, { wch: 22 }, { wch: 16 }, { wch: 16 }, { wch: 14 },
     ];
 
     const wb = XLSX.utils.book_new();
@@ -916,29 +1049,41 @@ function downloadResults() {
 
 function calculateSingle() {
     const salary = parseFloat(document.getElementById('singleSalary').value) || 0;
+    const ot = parseFloat(document.getElementById('singleOT').value) || 0;
+    const commission = parseFloat(document.getElementById('singleCommission').value) || 0;
     const allowance = parseFloat(document.getElementById('singleAllowance').value) || 0;
+
     if (salary <= 0) {
         document.getElementById('singleResult').style.display = 'none';
         return;
     }
 
+    const residentCategory = document.getElementById('singleResident').value;
     const result = calculatePCB(salary, {
         epfRate: parseFloat(document.getElementById('singleEpfRate').value),
         maritalStatus: document.getElementById('singleMarital').value,
         numChildren: parseInt(document.getElementById('singleChildren').value) || 0,
         includeSocso: document.getElementById('singleSocso').value === 'yes',
+        residentCategory: residentCategory,
+        ot: ot,
+        commission: commission,
         allowance: allowance,
     });
 
     document.getElementById('singleResult').style.display = 'block';
 
+    const epfLabel = `EPF (${document.getElementById('singleEpfRate').value}%)`;
+
     document.getElementById('singleResultGrid').innerHTML = `
         <div class="result-item">
-            <div class="label">Gross Income</div>
-            <div class="value">RM ${fmt(result.totalMonthlyIncome)}</div>
+            <div class="label">Basic Salary</div>
+            <div class="value">RM ${fmt(result.basicSalary)}</div>
         </div>
+        ${result.ot ? `<div class="result-item"><div class="label">Overtime</div><div class="value">RM ${fmt(result.ot)}</div></div>` : ''}
+        ${result.commission ? `<div class="result-item"><div class="label">Commission</div><div class="value">RM ${fmt(result.commission)}</div></div>` : ''}
+        ${result.allowance ? `<div class="result-item"><div class="label">Allowance</div><div class="value">RM ${fmt(result.allowance)}</div></div>` : ''}
         <div class="result-item">
-            <div class="label">EPF (${document.getElementById('singleEpfRate').value}%)</div>
+            <div class="label">${epfLabel}</div>
             <div class="value">RM ${fmt(result.monthlyEPF)}</div>
         </div>
         <div class="result-item">
@@ -950,7 +1095,7 @@ function calculateSingle() {
             <div class="value">RM ${fmt(result.monthlyEIS)}</div>
         </div>
         <div class="result-item highlight">
-            <div class="label">Monthly PCB</div>
+            <div class="label">Monthly PCB${result.isNonCitizen ? ' (30%)' : ''}</div>
             <div class="value">RM ${fmt(result.monthlyPCB)}</div>
         </div>
         <div class="result-item highlight">
@@ -959,25 +1104,43 @@ function calculateSingle() {
         </div>
     `;
 
-    document.getElementById('singleDetails').innerHTML = `
-        <table class="info-table" style="width:100%">
-            <tr><td style="width:60%">Annual Gross Income</td><td class="text-right"><strong>RM ${fmt(result.annualGross)}</strong></td></tr>
-            <tr><td colspan="2" style="background:var(--bg); font-weight:600; color:var(--primary)">Tax Reliefs (Annual)</td></tr>
-            <tr><td>&nbsp;&nbsp;&nbsp;Individual Relief</td><td class="text-right">RM ${fmt(result.individualRelief)}</td></tr>
-            <tr><td>&nbsp;&nbsp;&nbsp;EPF Relief (capped at RM4,000)</td><td class="text-right">RM ${fmt(result.epfRelief)}</td></tr>
-            <tr><td>&nbsp;&nbsp;&nbsp;SOCSO Relief (capped at RM350)</td><td class="text-right">RM ${fmt(result.socsoRelief)}</td></tr>
-            ${result.spouseRelief > 0 ? `<tr><td>&nbsp;&nbsp;&nbsp;Spouse Relief</td><td class="text-right">RM ${fmt(result.spouseRelief)}</td></tr>` : ''}
-            ${result.childrenRelief > 0 ? `<tr><td>&nbsp;&nbsp;&nbsp;Children Relief (${document.getElementById('singleChildren').value} x RM2,000)</td><td class="text-right">RM ${fmt(result.childrenRelief)}</td></tr>` : ''}
-            <tr style="font-weight:600"><td>Total Reliefs</td><td class="text-right">RM ${fmt(result.totalReliefs)}</td></tr>
-            <tr style="font-weight:700; color:var(--primary)"><td>Chargeable Income</td><td class="text-right">RM ${fmt(result.chargeableIncome)}</td></tr>
-            <tr><td>Annual Tax (before rebate)</td><td class="text-right">RM ${fmt(result.annualTax + result.rebate)}</td></tr>
-            ${result.rebate > 0 ? `<tr><td>Tax Rebate</td><td class="text-right">(RM ${fmt(result.rebate)})</td></tr>` : ''}
-            <tr style="font-weight:600"><td>Annual Tax Payable</td><td class="text-right">RM ${fmt(result.annualTax)}</td></tr>
-            <tr style="font-weight:700; font-size:1.05rem; color:var(--accent)"><td>Monthly PCB (Annual Tax &divide; 12)</td><td class="text-right">RM ${fmt(result.monthlyPCB)}</td></tr>
-        </table>
-    `;
+    // Build details table
+    let detailsHTML = `<table class="info-table" style="width:100%">`;
+
+    // Income section
+    detailsHTML += `<tr><td colspan="2" style="background:var(--bg); font-weight:600; color:var(--primary)">Monthly Income</td></tr>`;
+    detailsHTML += `<tr><td style="width:60%">&nbsp;&nbsp;&nbsp;Basic Salary</td><td class="text-right">RM ${fmt(result.basicSalary)}</td></tr>`;
+    if (result.ot) detailsHTML += `<tr><td>&nbsp;&nbsp;&nbsp;Overtime (OT)</td><td class="text-right">RM ${fmt(result.ot)}</td></tr>`;
+    if (result.commission) detailsHTML += `<tr><td>&nbsp;&nbsp;&nbsp;Commission</td><td class="text-right">RM ${fmt(result.commission)}</td></tr>`;
+    if (result.allowance) detailsHTML += `<tr><td>&nbsp;&nbsp;&nbsp;Allowance (non-taxable)</td><td class="text-right">RM ${fmt(result.allowance)}</td></tr>`;
+    detailsHTML += `<tr style="font-weight:600"><td>Monthly Taxable Income</td><td class="text-right">RM ${fmt(result.monthlyTaxableIncome)}</td></tr>`;
+    detailsHTML += `<tr style="font-weight:600"><td>Total Monthly Income (incl. allowance)</td><td class="text-right">RM ${fmt(result.totalMonthlyIncome)}</td></tr>`;
+
+    // Tax calculation
+    detailsHTML += `<tr><td colspan="2" style="background:var(--bg); font-weight:600; color:var(--primary)">PCB Tax Calculation ${result.isNonCitizen ? '(Non-Citizen: Flat 30%)' : '(Citizen: Progressive)'}</td></tr>`;
+    detailsHTML += `<tr><td>Annual Taxable Income</td><td class="text-right"><strong>RM ${fmt(result.annualTaxableIncome)}</strong></td></tr>`;
+
+    if (result.isNonCitizen) {
+        detailsHTML += `<tr><td>Flat Tax Rate</td><td class="text-right">30%</td></tr>`;
+        detailsHTML += `<tr><td>Tax Reliefs / Rebates</td><td class="text-right">Not applicable</td></tr>`;
+    } else {
+        detailsHTML += `<tr><td colspan="2" style="background:#f8f9fb; font-weight:500; font-size:0.82rem;">Tax Reliefs (Annual)</td></tr>`;
+        detailsHTML += `<tr><td>&nbsp;&nbsp;&nbsp;Individual Relief</td><td class="text-right">RM ${fmt(result.individualRelief)}</td></tr>`;
+        detailsHTML += `<tr><td>&nbsp;&nbsp;&nbsp;EPF Relief (capped at RM4,000)</td><td class="text-right">RM ${fmt(result.epfRelief)}</td></tr>`;
+        if (result.spouseRelief > 0) detailsHTML += `<tr><td>&nbsp;&nbsp;&nbsp;Spouse Relief</td><td class="text-right">RM ${fmt(result.spouseRelief)}</td></tr>`;
+        if (result.childrenRelief > 0) detailsHTML += `<tr><td>&nbsp;&nbsp;&nbsp;Children Relief (${document.getElementById('singleChildren').value} x RM2,000)</td><td class="text-right">RM ${fmt(result.childrenRelief)}</td></tr>`;
+        detailsHTML += `<tr style="font-weight:600"><td>Total Reliefs</td><td class="text-right">RM ${fmt(result.totalReliefs)}</td></tr>`;
+        detailsHTML += `<tr style="font-weight:700; color:var(--primary)"><td>Chargeable Income</td><td class="text-right">RM ${fmt(result.chargeableIncome)}</td></tr>`;
+        detailsHTML += `<tr><td>Annual Tax (before rebate)</td><td class="text-right">RM ${fmt(result.annualTax + result.rebate)}</td></tr>`;
+        if (result.rebate > 0) detailsHTML += `<tr><td>Tax Rebate</td><td class="text-right">(RM ${fmt(result.rebate)})</td></tr>`;
+    }
+
+    detailsHTML += `<tr style="font-weight:600"><td>Annual Tax Payable</td><td class="text-right">RM ${fmt(result.annualTax)}</td></tr>`;
+    detailsHTML += `<tr style="font-weight:700; font-size:1.05rem; color:var(--accent)"><td>Monthly PCB (Annual Tax &divide; 12)</td><td class="text-right">RM ${fmt(result.monthlyPCB)}</td></tr>`;
+    detailsHTML += `</table>`;
+
+    document.getElementById('singleDetails').innerHTML = detailsHTML;
 }
 </script>
 </body>
 </html>
-
